@@ -11,7 +11,6 @@ import type { DatePickerMode } from './types';
 
 type TableName = 'Date' | 'Month' | 'Year';
 
-
 const props = withDefaults(
   defineProps<{
     modelDate?: Date | Date[];
@@ -30,10 +29,40 @@ const emits = defineEmits<{ (e: 'update:modelDate', value: Date): void }>();
 
 const modelDateValue = useVModel(props, 'modelDate', emits);
 
-const currentViewDate = ref<Date>(
-  Array.isArray(modelDateValue.value)
-    ? modelDateValue.value[modelDateValue.value.length - 1]
-    : modelDateValue.value
+const internalModelDate = ref<string | string[]>(
+  Array.isArray(modelDateValue.value) ? [] : ''
+);
+
+if (Array.isArray(modelDateValue.value)) {
+  internalModelDate.value = modelDateValue.value.map(date => {
+    return dayjs(date).format('YYYY-MM-DD');
+  });
+} else {
+  internalModelDate.value = dayjs(modelDateValue.value).format('YYYY-MM-DD');
+}
+
+watch(internalModelDate, internalModelDate => {
+  if (Array.isArray(internalModelDate)) {
+    internalModelDate.forEach(value => {
+      if (Array.isArray(modelDateValue.value)) {
+        modelDateValue.value.push(new Date(value));
+      }
+    });
+  } else {
+    modelDateValue.value = new Date(internalModelDate);
+  }
+});
+
+const activeDate = computed<string>(() => {
+  return Array.isArray(internalModelDate.value)
+    ? internalModelDate.value[internalModelDate.value.length - 1]
+    : internalModelDate.value;
+});
+
+const currentViewDate = ref<string>(
+  Array.isArray(internalModelDate.value)
+    ? internalModelDate.value[internalModelDate.value.length - 1]
+    : internalModelDate.value
 );
 
 const currentTable = ref<TableName>('Date');
@@ -64,33 +93,31 @@ function changeTable(tableName: TableName) {
 }
 
 function setCurrentViewYear(year: number) {
-  currentViewDate.value = new Date(
-    dayjs(currentViewDate.value).set('y', year).format('YYYY-MM-DD')
-  );
+  currentViewDate.value = dayjs(currentViewDate.value)
+    .set('y', year)
+    .format('YYYY-MM-DD');
+
   changeTable('Month');
 }
 
 function setCurrentViewMonth(month: number) {
-  currentViewDate.value = new Date(
-    dayjs(currentViewDate.value).set('M', month).format('YYYY-MM-DD')
-  );
+  currentViewDate.value = dayjs(currentViewDate.value)
+    .set('M', month)
+    .format('YYYY-MM-DD');
+
   changeTable('Date');
 }
 
 function moveYear(forward: boolean) {
-  currentViewDate.value = new Date(
-    forward
-      ? dayjs(currentViewDate.value).add(1, 'year').format('YYYY-MM-DD')
-      : dayjs(currentViewDate.value).subtract(1, 'year').format('YYYY-MM-DD')
-  );
+  currentViewDate.value = forward
+    ? dayjs(currentViewDate.value).add(1, 'year').format('YYYY-MM-DD')
+    : dayjs(currentViewDate.value).subtract(1, 'year').format('YYYY-MM-DD');
 }
 
 function moveMonth(forward: boolean) {
-  currentViewDate.value = new Date(
-    forward
-      ? dayjs(currentViewDate.value).add(1, 'month').format('YYYY-MM-DD')
-      : dayjs(currentViewDate.value).subtract(1, 'month').format('YYYY-MM-DD')
-  );
+  currentViewDate.value = forward
+    ? dayjs(currentViewDate.value).add(1, 'month').format('YYYY-MM-DD')
+    : dayjs(currentViewDate.value).subtract(1, 'month').format('YYYY-MM-DD');
 }
 
 function setModelDateValue(dateValue: Date) {
@@ -133,22 +160,10 @@ function findIndexModelDate(date: Date): number {
   <div class="date-picker">
     <div class="date-picker__title">
       <div class="date-picker-title__year">
-        {{
-          dayjs(
-            Array.isArray(modelDate)
-              ? modelDate[modelDate.length - 1]
-              : modelDate
-          ).format('YYYY')
-        }}
+        {{ dayjs(activeDate).format('YYYY') }}
       </div>
       <div class="date-picker-title__date">
-        {{
-          dayjs(
-            Array.isArray(modelDate)
-              ? modelDate[modelDate.length - 1]
-              : modelDate
-          ).format('ddd, MMM D')
-        }}
+        {{ dayjs(activeDate).format('ddd, MMM D') }}
       </div>
     </div>
     <div class="date-picker__panel" v-if="currentTable !== 'Year'">
@@ -189,8 +204,7 @@ function findIndexModelDate(date: Date): number {
       </button>
     </div>
     <YearTable
-      :date="currentViewDate"
-      :nowPickDate="modelDateValue"
+      :currentViewDate="currentViewDate"
       :max="max"
       :min="min"
       @setYear="setCurrentViewYear"
@@ -198,8 +212,8 @@ function findIndexModelDate(date: Date): number {
       class="date-picker__body"
     />
     <MonthTable
-      :date="currentViewDate"
-      :nowPickDate="modelDateValue"
+      :currentViewDate="currentViewDate"
+      :activeDate="activeDate"
       v-else-if="currentTable === 'Month'"
       class="date-picker__body"
       @setMonth="setCurrentViewMonth"

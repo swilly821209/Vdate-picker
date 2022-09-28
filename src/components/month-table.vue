@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core';
 import dayjs from 'dayjs';
 import { computed } from 'vue';
 
-const props = defineProps<{ date: Date; nowPickDate: Date }>();
+const props = defineProps<{
+  currentViewDate: string;
+  activeDate: string;
+}>();
 const emits = defineEmits<{ (e: 'setMonth', month: number): void }>();
 
 const monthList = [
@@ -23,7 +25,8 @@ const monthList = [
 
 const isSameYear = computed<boolean>(() => {
   return (
-    dayjs(props.date).format('YYYY') === dayjs(props.nowPickDate).format('YYYY')
+    dayjs(props.currentViewDate).format('YYYY') ===
+    dayjs(props.activeDate).format('YYYY')
   );
 });
 </script>
@@ -36,7 +39,8 @@ const isSameYear = computed<boolean>(() => {
       :class="{
         'is-active':
           isSameYear &&
-          dayjs(props.nowPickDate).format('MMM').toLocaleUpperCase() === month,
+          dayjs(props.currentViewDate).format('MMM').toLocaleUpperCase() ===
+            month,
       }"
       @click="emits('setMonth', index)"
     >

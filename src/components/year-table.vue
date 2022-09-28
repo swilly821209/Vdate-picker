@@ -1,14 +1,20 @@
 <script setup lang="ts">
-import { useVModel } from '@vueuse/core';
-import { onMounted, ref, defineProps } from 'vue';
+import { onMounted, ref, defineProps, computed } from 'vue';
 import dayjs from 'dayjs';
-const props = defineProps<{ date: Date; min: string; max: string }>();
+
+const props = defineProps<{
+  currentViewDate: string;
+  min: string;
+  max: string;
+}>();
+
 const emits = defineEmits<{ (e: 'setYear', year: number): void }>();
 
-const yearListItem = ref<HTMLDivElement | null>(null)!;
-function getYearList() {
+const yearListItem = ref<HTMLDivElement | null>(null);
+
+const yearList = computed<number[]>(() => {
   const yearList = [];
-  const nowYear = +dayjs(props.date).format('YYYY');
+  const nowYear = +dayjs(props.currentViewDate).format('YYYY');
   const maxYear = props.max
     ? +dayjs(props.max).format('YYYY')
     : Number(nowYear) + 100;
@@ -20,8 +26,8 @@ function getYearList() {
     yearList.push(year);
   }
   return yearList;
-}
-const yearList = ref(getYearList());
+});
+
 onMounted(() => {
   if (yearListItem.value) {
     yearListItem.value.scrollTop =
@@ -35,6 +41,9 @@ onMounted(() => {
     <button
       v-for="year in yearList"
       :key="year"
+      :class="{
+        'is-active': +dayjs(props.currentViewDate).format('YYYY') === year,
+      }"
       @click="emits('setYear', year)"
     >
       {{ year }}
@@ -53,5 +62,10 @@ onMounted(() => {
   width: 100%;
   height: 32px;
   text-align: center;
+}
+
+.is-active {
+  color: #ff9000;
+  font-size: 16px;
 }
 </style>

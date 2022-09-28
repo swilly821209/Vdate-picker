@@ -3,7 +3,7 @@ import datePicker from '@/components/date-picker.vue';
 import dayjs from 'dayjs';
 import { ref } from 'vue';
 import type { DatePickerMode } from './components/types';
-const aa = ref(new Date('1993-1-09'));
+const aa = ref(new Date());
 const mode = ref<DatePickerMode>('only');
 </script>
 
@@ -17,6 +17,7 @@ const mode = ref<DatePickerMode>('only');
       <option>B</option>
       <option>C</option>
     </select>
+    {{ aa }}
     <date-picker v-model:modelDate="aa" mode="multiple"> </date-picker>
   </div>
 </template>
