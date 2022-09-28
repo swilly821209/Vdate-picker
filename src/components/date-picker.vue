@@ -7,10 +7,10 @@ import MonthTable from '@/components/month-table.vue';
 import YearTable from '@/components/year-table.vue';
 import dayjs from 'dayjs';
 import { useVModel } from '@vueuse/core';
+import type { DatePickerMode } from './types';
 
 type TableName = 'Date' | 'Month' | 'Year';
 
-type DatePickerMode = 'only' | 'multiple' | 'range' | 'readonly';
 
 const props = withDefaults(
   defineProps<{
@@ -95,8 +95,13 @@ function moveMonth(forward: boolean) {
 
 function setModelDateValue(dateValue: Date) {
   if (props.mode === 'readonly') return;
+  console.log(findIndexModelDate(dateValue));
+  if (findIndexModelDate(dateValue) !== -1) {
+    Array.isArray(modelDateValue.value) &&
+      modelDateValue.value.splice(findIndexModelDate(dateValue), 1);
+    return;
+  }
   if (props.mode === 'range' || props.mode === 'multiple') {
-    console.log(dateValue);
     if (Array.isArray(modelDateValue.value)) {
       if (modelDateValue.value.length > 1 && props.mode === 'range') {
         modelDateValue.value.shift();
@@ -108,6 +113,20 @@ function setModelDateValue(dateValue: Date) {
     return;
   }
   modelDateValue.value = dateValue;
+}
+
+function findIndexModelDate(date: Date): number {
+  console.log(modelDateValue.value);
+  if (Array.isArray(modelDateValue.value)) {
+    return modelDateValue.value.findIndex(modelDate => {
+      console.log(dayjs(modelDate).format('YYYY-MM-DD'), 'f');
+      return (
+        dayjs(modelDate).format('YYYY-MM-DD') ===
+        dayjs(date).format('YYYY-MM-DD')
+      );
+    });
+  }
+  return -1;
 }
 </script>
 <template>

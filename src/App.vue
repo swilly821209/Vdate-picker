@@ -2,14 +2,22 @@
 import datePicker from '@/components/date-picker.vue';
 import dayjs from 'dayjs';
 import { ref } from 'vue';
+import type { DatePickerMode } from './components/types';
 const aa = ref(new Date('1993-1-09'));
-console.log(aa, dayjs());
+const mode = ref<DatePickerMode>('only');
 </script>
 
 <template>
   <div class="center">
-    {{ aa }}
-    <date-picker v-model:modelDate="aa" mode="range"> </date-picker>
+    <div>Selected: {{ mode }}</div>
+
+    <select v-model="mode">
+      <option disabled value="">Please select one</option>
+      <option>A</option>
+      <option>B</option>
+      <option>C</option>
+    </select>
+    <date-picker v-model:modelDate="aa" mode="multiple"> </date-picker>
   </div>
 </template>
 
@@ -20,6 +28,7 @@ body {
 }
 .center {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;

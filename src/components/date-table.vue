@@ -4,10 +4,11 @@ import ObjeceSupport from 'dayjs/plugin/objectSupport';
 import IsBetween from 'dayjs/plugin/isBetween';
 import { useCounter } from '@vueuse/core';
 import { ref, computed } from 'vue';
+import type { DatePickerMode } from './types';
 
 dayjs.extend(IsBetween);
 dayjs.extend(ObjeceSupport);
-type DatePickerMode = 'only' | 'multiple' | 'range' | 'readonly';
+
 type DateType = 'normal' | 'today' | 'week' | 'next-month' | 'prev-month';
 interface DateTableData {
   year: number;
@@ -18,7 +19,7 @@ interface DateTableData {
 }
 const props = defineProps<{
   date: Date;
-  nowPickDate: Date;
+  nowPickDate: Date | Date[];
   mode: DatePickerMode;
 }>();
 const emits = defineEmits<{ (e: 'setModelDateValue', date: Date): void }>();
@@ -29,7 +30,7 @@ const weekList = computed(() => {
   // const weekList = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const weekList = ['日', '一', '二', '三', '四', '五', '六'];
   for (let i = 0; i < firstDayOfWeek; i++) {
-    const week = weekList.shift()
+    const week = weekList.shift();
     weekList.push(week!);
   }
   return weekList;
@@ -95,79 +96,29 @@ const dateList = computed<DateTableData[]>(() => {
 
 function handlerPickDayType(date: Date): DatePickerMode {
   let type = 'normal';
-  if (props.mode === 'range' && props.nowPickDate.length === 2) {
-    dayjs(date).isBetween(props.nowPickDate[0], props.nowPickDate[1], 'day', '[]')
+  if (
+    props.mode === 'range' &&
+    Array.isArray(props.nowPickDate) &&
+    props.nowPickDate.length === 2
+  ) {
+    dayjs(date).isBetween(
+      props.nowPickDate[0],
+      props.nowPickDate[1],
+      'day',
+      '[]'
+    )
       ? (type = 'today')
       : (type = 'normal');
   }
-  if (
-    Array.isArray(props.nowPickDate) &&
-    dayjs(props.nowPickDate).isSame(dayjs(date), 'day')
-  ) {
-    type = 'today';
+  if (Array.isArray(props.nowPickDate)) {
+    props.nowPickDate.map(pickDate => {
+      dayjs(pickDate).isSame(dayjs(date), 'day') ? (type = 'today') : '';
+    });
   }
   return type as DatePickerMode;
 }
 
-const setDateTableData = (
-  year: number,
-  month: number,
-  disabledDate: (date: Date) => boolean
-): DateTableData[] => {
-  const nowMonth = dayjs({ year: year, month: (month -= 1) });
-
-  const monthFirstDayOfWeek = nowMonth.startOf('month').day() - firstDayOfWeek;
-  const endDateOfMonth = nowMonth.endOf('month').date();
-  const nextMonth = nowMonth.add(1, 'month');
-  const prevMonth = nowMonth.subtract(1, 'month');
-  const endDateOfPrevMonth = prevMonth.endOf('month').date();
-  const { count: prevMonthDate, inc: incPrevMonthDate } = useCounter(
-    endDateOfPrevMonth + 1 - monthFirstDayOfWeek
-  );
-  const { count: nowMonthDate, inc: incNowMonthDate } = useCounter(1);
-  const { count: nextMonthDate, inc: incNextMonthDate } = useCounter(1);
-  const dateList = [];
-  for (let i = 0; i < 42; i++) {
-    if (monthFirstDayOfWeek <= i && nowMonthDate.value <= endDateOfMonth) {
-      dateList.push({
-        year: year,
-        month: month,
-        date: nowMonthDate.value,
-        disabled: disabledDate(new Date(year, month, nowMonthDate.value))
-          ? true
-          : false,
-        type: 'normal' as DateType,
-      });
-      incNowMonthDate();
-      continue;
-    }
-    if (monthFirstDayOfWeek <= i && monthFirstDayOfWeek + endDateOfMonth <= i) {
-      dateList.push({
-        year: nextMonth.year(),
-        month: nextMonth.month(),
-        date: nextMonthDate.value,
-        disabled: true,
-        type: 'next-month' as DateType,
-      });
-      incNextMonthDate();
-      continue;
-    }
-    dateList.push({
-      year: prevMonth.year(),
-      month: prevMonth.month(),
-      date: prevMonthDate.value,
-      disabled: true,
-      type: 'prev-month' as DateType,
-    });
-    incPrevMonthDate();
-  }
-  return dateList;
-};
 function clickDateBtn(date: DateTableData) {
-  console.log(
-    new Date(`${date.year}-${date.month}-${date.date}`),
-    `${date.year}-${date.month}-${date.date}`
-  );
   emits(
     'setModelDateValue',
     new Date(`${date.year}-${date.month}-${date.date}`)
