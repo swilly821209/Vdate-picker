@@ -29,7 +29,7 @@ const weekList = computed(() => {
   // const weekList = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const weekList = ['日', '一', '二', '三', '四', '五', '六'];
   for (let i = 0; i < firstDayOfWeek; i++) {
-    const week = weekList.shift();
+    const week = weekList.shift()
     weekList.push(week!);
   }
   return weekList;
