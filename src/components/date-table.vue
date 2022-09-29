@@ -3,13 +3,13 @@ import dayjs from 'dayjs';
 import ObjeceSupport from 'dayjs/plugin/objectSupport';
 import IsBetween from 'dayjs/plugin/isBetween';
 import { useCounter } from '@vueuse/core';
-import { ref, computed } from 'vue';
+import { ref, computed, popScopeId } from 'vue';
 import type { DatePickerMode } from './types';
 
 dayjs.extend(IsBetween);
 dayjs.extend(ObjeceSupport);
 
-type DateType = 'normal' | 'today' | 'week' | 'next-month' | 'prev-month';
+type DateType = 'normal' | 'active' | 'week' | 'next-month' | 'prev-month';
 interface DateTableData {
   year: number;
   month: number;
@@ -17,11 +17,13 @@ interface DateTableData {
   disabled: boolean;
   type: DateType;
 }
+
 const props = defineProps<{
-  date: Date;
-  nowPickDate: Date | Date[];
   mode: DatePickerMode;
+  internalModelDate: string | string[];
+  currentViewDate: string;
 }>();
+
 const emits = defineEmits<{ (e: 'setModelDateValue', date: Date): void }>();
 
 const firstDayOfWeek = 0;
@@ -39,13 +41,14 @@ const weekList = computed(() => {
 // const dateList = ref<DateTableData[]>([]);
 
 const dateList = computed<DateTableData[]>(() => {
-  const year = +dayjs(props.date).format('YYYY');
-  const month = +dayjs(props.date).format('MM');
+  const year = +dayjs(props.currentViewDate).format('YYYY');
+  const month = +dayjs(props.currentViewDate).format('MM');
   const monthFirstDayOfWeek =
-    dayjs(props.date).startOf('month').day() - firstDayOfWeek;
-  const endDateOfMonth = dayjs(props.date).endOf('month').date();
-  const nextMonth = dayjs(props.date).add(1, 'month');
-  const prevMonth = dayjs(props.date).subtract(1, 'month');
+    dayjs(props.currentViewDate).startOf('month').day() - firstDayOfWeek;
+  const endDateOfMonth = dayjs(props.currentViewDate).endOf('month').date();
+  const nextMonth = dayjs(props.currentViewDate).add(1, 'month');
+  console.log(nextMonth)
+  const prevMonth = dayjs(props.currentViewDate).subtract(1, 'month');
   const endDateOfPrevMonth = prevMonth.endOf('month').date();
   const { count: prevMonthDate, inc: incPrevMonthDate } = useCounter(
     endDateOfPrevMonth + 1 - monthFirstDayOfWeek
@@ -60,12 +63,14 @@ const dateList = computed<DateTableData[]>(() => {
         month: month,
         date: nowMonthDate.value,
         disabled: disabledDate(
-          new Date(`${year}-${month}-${nowMonthDate.value}`)
+          new Date(
+            dayjs(`${year}-${month}-${nowMonthDate.value}`).format('YYYY-MM-DD')
+          )
         )
           ? true
           : false,
-        type: handlerPickDayType(
-          new Date(`${year}-${month}-${nowMonthDate.value}`)
+        type: handlerPickDateType(
+          dayjs(`${year}-${month}-${nowMonthDate.value}`).format('YYYY-MM-DD')
         ),
       });
       incNowMonthDate();
@@ -91,31 +96,25 @@ const dateList = computed<DateTableData[]>(() => {
     });
     incPrevMonthDate();
   }
+  console.log(dateList)
   return dateList;
 });
 
-function handlerPickDayType(date: Date): DatePickerMode {
-  let type = 'normal';
+function handlerPickDateType(dateString: string): DateType {
+  let type: DateType = 'normal';
   if (
-    props.mode === 'range' &&
-    Array.isArray(props.nowPickDate) &&
-    props.nowPickDate.length === 2
+    Array.isArray(props.internalModelDate) &&
+    props.internalModelDate.includes(dateString)
   ) {
-    dayjs(date).isBetween(
-      props.nowPickDate[0],
-      props.nowPickDate[1],
-      'day',
-      '[]'
-    )
-      ? (type = 'today')
-      : (type = 'normal');
+    if (props.internalModelDate.includes(dateString)) {
+      type = 'active';
+    }
+  } else {
+    if (props.internalModelDate === dateString) {
+      type = 'active';
+    }
   }
-  if (Array.isArray(props.nowPickDate)) {
-    props.nowPickDate.map(pickDate => {
-      dayjs(pickDate).isSame(dayjs(date), 'day') ? (type = 'today') : '';
-    });
-  }
-  return type as DatePickerMode;
+  return type;
 }
 
 function clickDateBtn(date: DateTableData) {
@@ -143,7 +142,7 @@ const disabledDate = (date: Date) => {
         :key="index"
         :class="{
           'date-btn__disabled': date.disabled,
-          'is-active': date.type === 'today',
+          'is-active': date.type === 'active',
         }"
         :disabled="date.disabled && date.type !== 'normal'"
         @click="clickDateBtn(date)"
@@ -192,7 +191,7 @@ const disabledDate = (date: Date) => {
 }
 
 .date-btn__disabled {
-  opacity: 0.3;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 

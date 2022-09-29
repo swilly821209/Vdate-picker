@@ -219,8 +219,8 @@ function findIndexModelDate(date: Date): number {
       @setMonth="setCurrentViewMonth"
     />
     <DateTable
-      :date="currentViewDate"
-      :nowPickDate="modelDateValue"
+      :internalModelDate="internalModelDate"
+      :currentViewDate="currentViewDate"
       :mode="mode"
       @setModelDateValue="setModelDateValue"
       v-else
