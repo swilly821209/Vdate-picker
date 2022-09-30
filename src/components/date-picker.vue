@@ -120,37 +120,34 @@ function moveMonth(forward: boolean) {
     : dayjs(currentViewDate.value).subtract(1, 'month').format('YYYY-MM-DD');
 }
 
-function setModelDateValue(dateValue: Date) {
+function setInternalValue(dateValue: string) {
   if (props.mode === 'readonly') return;
-  console.log(findIndexModelDate(dateValue));
-  if (findIndexModelDate(dateValue) !== -1) {
-    Array.isArray(modelDateValue.value) &&
-      modelDateValue.value.splice(findIndexModelDate(dateValue), 1);
-    return;
+  if (
+    checkInternalValueArrayHave(dateValue) !== -1 &&
+    Array.isArray(internalModelDate.value)
+  ) {
+    internalModelDate.value.splice(checkInternalValueArrayHave(dateValue), 1);
   }
-  if (props.mode === 'range' || props.mode === 'multiple') {
-    if (Array.isArray(modelDateValue.value)) {
-      if (modelDateValue.value.length > 1 && props.mode === 'range') {
-        modelDateValue.value.shift();
-      }
-      modelDateValue.value.push(dateValue);
-      return;
-    }
-    modelDateValue.value = [dateValue];
-    return;
-  }
-  modelDateValue.value = dateValue;
+  if()
 }
 
-function findIndexModelDate(date: Date): number {
-  console.log(modelDateValue.value);
-  if (Array.isArray(modelDateValue.value)) {
-    return modelDateValue.value.findIndex(modelDate => {
-      console.log(dayjs(modelDate).format('YYYY-MM-DD'), 'f');
-      return (
-        dayjs(modelDate).format('YYYY-MM-DD') ===
-        dayjs(date).format('YYYY-MM-DD')
-      );
+function handlerRangeModeSetValue(dateValue: string) {
+  if(props.mode === 'range' && Array.isArray(internalModelDate.value)){
+    if(internalModelDate.value.length === 0){
+      internalModelDate.value.push(dateValue)
+    } else if (internalModelDate.value.length === 1){
+      dayjs(dateValue).isAfter(dayjs(internalModelDate.value[0])) ? internalModelDate.value.push(dateValue) : internalModelDate.value.unshift(dateValue)
+    } else {
+      internalModelDate.value.length = 0
+      internalModelDate.value.push(dateValue)
+    }
+  }
+}
+
+function checkInternalValueArrayHave(dateValue: string) {
+  if (Array.isArray(internalModelDate.value)) {
+    return internalModelDate.value.findIndex(internalValue => {
+      return internalValue === dateValue;
     });
   }
   return -1;
@@ -222,7 +219,7 @@ function findIndexModelDate(date: Date): number {
       :internalModelDate="internalModelDate"
       :currentViewDate="currentViewDate"
       :mode="mode"
-      @setModelDateValue="setModelDateValue"
+      @setInternalValue="setInternalValue"
       v-else
       class="date-picker__body"
     />

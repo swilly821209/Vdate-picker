@@ -24,7 +24,7 @@ const props = defineProps<{
   currentViewDate: string;
 }>();
 
-const emits = defineEmits<{ (e: 'setModelDateValue', date: Date): void }>();
+const emits = defineEmits<{ (e: 'setInternalValue', date: Date): void }>();
 
 const firstDayOfWeek = 0;
 
@@ -118,10 +118,7 @@ function handlerPickDateType(dateString: string): DateType {
 }
 
 function clickDateBtn(date: DateTableData) {
-  emits(
-    'setModelDateValue',
-    new Date(`${date.year}-${date.month}-${date.date}`)
-  );
+  emits('setInternalValue', `${date.year}-${date.month}-${date.date}`);
 }
 const disabledDate = (date: Date) => {
   // if (date.getDate() % 2) {
