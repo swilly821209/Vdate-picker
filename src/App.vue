@@ -11,19 +11,19 @@ const c = ref([new Date()]);
 <template>
   <div class="center">
     <div class="date-show">
-      <span>mode: only</span>
+      <span>mode: <strong>only</strong></span>
       <span>modelValue:</span>
       <span>{{ a }}</span>
       <date-picker v-model:modelDate="a" mode="only"> </date-picker>
     </div>
     <div class="date-show">
-      <span>mode: multiple</span>
+      <span>mode: <strong>multiple</strong></span>
       <span>modelValue:</span>
       <span>{{ b }}</span>
       <date-picker v-model:modelDate="b" mode="multiple"> </date-picker>
     </div>
     <div class="date-show">
-      <span>mode: range</span>
+      <span>mode: <strong>range</strong></span>
       <span>modelValue:</span>
       <span>{{ c }}</span>
       <date-picker v-model:modelDate="c" mode="range"> </date-picker>
