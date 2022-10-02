@@ -3,22 +3,24 @@ import datePicker from '@/components/date-picker.vue';
 import dayjs from 'dayjs';
 import { ref } from 'vue';
 import type { DatePickerMode } from './components/types';
-const aa = ref(new Date());
-const mode = ref<DatePickerMode>('only');
+const a = ref(new Date());
+const b = ref([new Date(), new Date('2022-10-10')])
 </script>
 
 <template>
   <div class="center">
-    <div>Selected: {{ mode }}</div>
-
-    <select v-model="mode">
-      <option disabled value="">Please select one</option>
-      <option>A</option>
-      <option>B</option>
-      <option>C</option>
-    </select>
-    {{ aa }}
-    <date-picker v-model:modelDate="aa" mode="multiple"> </date-picker>
+    <div class="date-show">
+      <span>mode: only</span>
+      <span>modelValue:</span>
+      <span>{{ a }}</span>
+      <date-picker v-model:modelDate="a" mode="only"> </date-picker>
+    </div>
+    <div class="date-show">
+      <span>mode: multiple</span>
+      <span>modelValue:</span>
+      <span>{{ b }}</span>
+      <date-picker v-model:modelDate="b" mode="multiple"> </date-picker>
+    </div>
   </div>
 </template>
 
@@ -40,5 +42,9 @@ button {
   padding: 0px;
   background-color: transparent;
   cursor: pointer;
+}
+.date-show {
+  display: flex;
+  flex-direction: column;
 }
 </style>

@@ -24,7 +24,7 @@ const props = defineProps<{
   currentViewDate: string;
 }>();
 
-const emits = defineEmits<{ (e: 'setInternalValue', date: Date): void }>();
+const emits = defineEmits<{ (e: 'setInternalValue', date: string): void }>();
 
 const firstDayOfWeek = 0;
 
@@ -47,7 +47,6 @@ const dateList = computed<DateTableData[]>(() => {
     dayjs(props.currentViewDate).startOf('month').day() - firstDayOfWeek;
   const endDateOfMonth = dayjs(props.currentViewDate).endOf('month').date();
   const nextMonth = dayjs(props.currentViewDate).add(1, 'month');
-  console.log(nextMonth)
   const prevMonth = dayjs(props.currentViewDate).subtract(1, 'month');
   const endDateOfPrevMonth = prevMonth.endOf('month').date();
   const { count: prevMonthDate, inc: incPrevMonthDate } = useCounter(
@@ -96,18 +95,26 @@ const dateList = computed<DateTableData[]>(() => {
     });
     incPrevMonthDate();
   }
-  console.log(dateList)
   return dateList;
 });
 
 function handlerPickDateType(dateString: string): DateType {
   let type: DateType = 'normal';
-  if (
-    Array.isArray(props.internalModelDate) &&
-    props.internalModelDate.includes(dateString)
-  ) {
+  if (Array.isArray(props.internalModelDate)) {
     if (props.internalModelDate.includes(dateString)) {
       type = 'active';
+    }
+    if (props.mode === 'range' && props.internalModelDate.length === 2) {
+      if (
+        dayjs(props.internalModelDate[0]).isBetween(
+          props.internalModelDate[0],
+          props.internalModelDate[1],
+          null,
+          '()'
+        )
+      ) {
+        type = 'active';
+      }
     }
   } else {
     if (props.internalModelDate === dateString) {
@@ -118,8 +125,12 @@ function handlerPickDateType(dateString: string): DateType {
 }
 
 function clickDateBtn(date: DateTableData) {
-  emits('setInternalValue', `${date.year}-${date.month}-${date.date}`);
+  emits(
+    'setInternalValue',
+    dayjs(`${date.year}-${date.month}-${date.date}`).format('YYYY-MM-DD')
+  );
 }
+
 const disabledDate = (date: Date) => {
   // if (date.getDate() % 2) {
   //   return true;

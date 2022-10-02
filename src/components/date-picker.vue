@@ -41,13 +41,16 @@ if (Array.isArray(modelDateValue.value)) {
   internalModelDate.value = dayjs(modelDateValue.value).format('YYYY-MM-DD');
 }
 
-watch(internalModelDate, internalModelDate => {
+watch(internalModelDate.value, internalModelDate => {
+  console.log(internalModelDate);
   if (Array.isArray(internalModelDate)) {
+    modelDateValue.value.length = 0;
     internalModelDate.forEach(value => {
       if (Array.isArray(modelDateValue.value)) {
         modelDateValue.value.push(new Date(value));
       }
     });
+    console.log(modelDateValue.value);
   } else {
     modelDateValue.value = new Date(internalModelDate);
   }
@@ -122,25 +125,40 @@ function moveMonth(forward: boolean) {
 
 function setInternalValue(dateValue: string) {
   if (props.mode === 'readonly') return;
-  if (
-    checkInternalValueArrayHave(dateValue) !== -1 &&
-    Array.isArray(internalModelDate.value)
-  ) {
-    internalModelDate.value.splice(checkInternalValueArrayHave(dateValue), 1);
+
+  if (props.mode === 'range') {
+    handlerRangeModeSetValue(dateValue);
   }
-  if()
+  if (props.mode === 'multiple') {
+    handlerMultipleModeSetValue(dateValue);
+  }
+  if (props.mode === 'only') {
+    internalModelDate.value = dateValue;
+  }
 }
 
 function handlerRangeModeSetValue(dateValue: string) {
-  if(props.mode === 'range' && Array.isArray(internalModelDate.value)){
-    if(internalModelDate.value.length === 0){
-      internalModelDate.value.push(dateValue)
-    } else if (internalModelDate.value.length === 1){
-      dayjs(dateValue).isAfter(dayjs(internalModelDate.value[0])) ? internalModelDate.value.push(dateValue) : internalModelDate.value.unshift(dateValue)
+  if (Array.isArray(internalModelDate.value)) {
+    if (internalModelDate.value.length === 0) {
+      internalModelDate.value.push(dateValue);
+    } else if (internalModelDate.value.length === 1) {
+      dayjs(dateValue).isAfter(dayjs(internalModelDate.value[0]))
+        ? internalModelDate.value.push(dateValue)
+        : internalModelDate.value.unshift(dateValue);
     } else {
-      internalModelDate.value.length = 0
-      internalModelDate.value.push(dateValue)
+      internalModelDate.value.length = 0;
+      internalModelDate.value.push(dateValue);
     }
+  }
+}
+
+function handlerMultipleModeSetValue(dateValue: string) {
+  if (Array.isArray(internalModelDate.value)) {
+    if (checkInternalValueArrayHave(dateValue) !== -1) {
+      internalModelDate.value.splice(checkInternalValueArrayHave(dateValue), 1);
+      return;
+    }
+    internalModelDate.value.push(dateValue);
   }
 }
 
@@ -230,6 +248,7 @@ function checkInternalValueArrayHave(dateValue: string) {
 .date-picker__title {
   padding: 8px 12px;
   background-color: #ff9000;
+  width: 224px;
 }
 .date-picker-title__year {
   margin-bottom: 4px;
