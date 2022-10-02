@@ -4,7 +4,8 @@ import dayjs from 'dayjs';
 import { ref } from 'vue';
 import type { DatePickerMode } from './components/types';
 const a = ref(new Date());
-const b = ref([new Date(), new Date('2022-10-10')])
+const b = ref([new Date(), new Date('2022-10-10')]);
+const c = ref([new Date()]);
 </script>
 
 <template>
@@ -21,6 +22,12 @@ const b = ref([new Date(), new Date('2022-10-10')])
       <span>{{ b }}</span>
       <date-picker v-model:modelDate="b" mode="multiple"> </date-picker>
     </div>
+    <div class="date-show">
+      <span>mode: range</span>
+      <span>modelValue:</span>
+      <span>{{ c }}</span>
+      <date-picker v-model:modelDate="c" mode="range"> </date-picker>
+    </div>
   </div>
 </template>
 
@@ -31,8 +38,7 @@ body {
 }
 .center {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
   height: 100vh;
 }
@@ -44,6 +50,7 @@ button {
   cursor: pointer;
 }
 .date-show {
+  width: 248px;
   display: flex;
   flex-direction: column;
 }

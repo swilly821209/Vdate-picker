@@ -41,20 +41,23 @@ if (Array.isArray(modelDateValue.value)) {
   internalModelDate.value = dayjs(modelDateValue.value).format('YYYY-MM-DD');
 }
 
-watch(internalModelDate.value, internalModelDate => {
-  console.log(internalModelDate);
-  if (Array.isArray(internalModelDate)) {
-    modelDateValue.value.length = 0;
-    internalModelDate.forEach(value => {
-      if (Array.isArray(modelDateValue.value)) {
-        modelDateValue.value.push(new Date(value));
-      }
-    });
-    console.log(modelDateValue.value);
-  } else {
-    modelDateValue.value = new Date(internalModelDate);
-  }
-});
+watch(
+  internalModelDate,
+  internalModelDate => {
+    if (Array.isArray(internalModelDate)) {
+      if (Array.isArray(modelDateValue.value)) modelDateValue.value.length = 0;
+      internalModelDate.forEach(value => {
+        if (Array.isArray(modelDateValue.value)) {
+          modelDateValue.value.push(new Date(value));
+        }
+      });
+      console.log(modelDateValue.value);
+    } else {
+      modelDateValue.value = new Date(internalModelDate);
+    }
+  },
+  { deep: true }
+);
 
 const activeDate = computed<string>(() => {
   return Array.isArray(internalModelDate.value)
