@@ -193,7 +193,10 @@ const disabledDate = (date: Date) => {
   border-radius: 100%;
 }
 
-.date-table__date > button:hover,
+.date-table__date > button:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.date-table__date > button.is-active:hover,
 .is-active {
   background-color: #ff9000;
 }
