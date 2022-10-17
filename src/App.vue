@@ -31,7 +31,7 @@ const c = ref([new Date()]);
   </div>
 </template>
 
-<style lang="css">
+<style lang="css" scoped>
 body {
   color: #1b1b1b;
   box-sizing: border-box;
@@ -42,16 +42,18 @@ body {
   align-items: center;
   height: 100vh;
 }
-button {
-  appearance: none;
-  border: none;
-  padding: 0px;
-  background-color: transparent;
-  cursor: pointer;
-}
 .date-show {
   width: 248px;
   display: flex;
   flex-direction: column;
+}
+@media (max-width: 639px) {
+  .center {
+    height: auto;
+    flex-direction: column;
+  }
+  .date-show {
+    margin-bottom: 10px;
+  }
 }
 </style>
