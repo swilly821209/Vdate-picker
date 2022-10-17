@@ -51,6 +51,7 @@ table {
   box-sizing: border-box;
 }
 .date-picker button {
+  color: #1b1b1b;
   appearance: none;
   border: none;
   padding: 0px;
