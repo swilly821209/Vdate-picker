@@ -151,6 +151,8 @@ const disabledDate = (date: Date) => {
         :class="{
           'date-btn__disabled': date.disabled,
           'is-active': date.type === 'active',
+          'is-left-active': dateList[index - 1]?.type === 'active',
+          'is-right-active': dateList[index + 1]?.type === 'active',
         }"
         :disabled="date.disabled && date.type !== 'normal'"
         @click="clickDateBtn(date)"
@@ -199,6 +201,16 @@ const disabledDate = (date: Date) => {
 .date-table__date > button.is-active:hover,
 .is-active {
   background-color: #ff9000;
+}
+
+.is-left-active {
+  border-bottom-left-radius: 0% !important;
+  border-top-left-radius: 0% !important;
+}
+
+.is-right-active {
+  border-bottom-right-radius: 0% !important;
+  border-top-right-radius: 0% !important;
 }
 
 .date-btn__disabled {
