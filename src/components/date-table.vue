@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import ObjeceSupport from 'dayjs/plugin/objectSupport';
 import IsBetween from 'dayjs/plugin/isBetween';
 import { useCounter } from '@vueuse/core';
-import { ref, computed, popScopeId } from 'vue';
+import { ref, computed, popScopeId, watch, nextTick } from 'vue';
 import type { DatePickerMode } from './types';
 
 dayjs.extend(IsBetween);
@@ -39,6 +39,19 @@ const weekList = computed(() => {
 });
 
 // const dateList = ref<DateTableData[]>([]);
+watch(
+  () => props.currentViewDate,
+  (newDate, oldDate) => {
+    isMoveMonth.value = false;
+    transitionName.value = dayjs(newDate).isBefore(oldDate, 'day')
+      ? 'reverse'
+      : 'inverse';
+    console.log(transitionName.value);
+    nextTick(() => {
+      isMoveMonth.value = true;
+    });
+  }
+);
 
 const dateList = computed<DateTableData[]>(() => {
   const year = +dayjs(props.currentViewDate).format('YYYY');
@@ -123,6 +136,8 @@ function handlerPickDateType(dateString: string): DateType {
   }
   return type;
 }
+const isMoveMonth = ref<boolean>(true);
+const transitionName = ref<string>('');
 
 function clickDateBtn(date: DateTableData) {
   emits(
@@ -144,26 +159,40 @@ const disabledDate = (date: Date) => {
     <div class="date-table__week">
       <span v-for="week in weekList" :key="week">{{ week }}</span>
     </div>
-    <div class="date-table__date">
-      <button
-        v-for="(date, index) in dateList"
-        :key="index"
-        :class="{
-          'date-btn__disabled': date.disabled,
-          'is-active': date.type === 'active',
-          'is-left-active': dateList[index - 1]?.type === 'active',
-          'is-right-active': dateList[index + 1]?.type === 'active',
-        }"
-        :disabled="date.disabled && date.type !== 'normal'"
-        @click="clickDateBtn(date)"
-      >
-        {{ date.date }}
-      </button>
-    </div>
+    <Transition :name="transitionName" mode="out-in">
+      <div class="date-table__date" v-if="isMoveMonth">
+        <button
+          v-for="(date, index) in dateList"
+          :key="index"
+          :class="{
+            'date-btn__disabled': date.disabled,
+            'is-active': date.type === 'active',
+            'is-left-active': dateList[index - 1]?.type === 'active',
+            'is-right-active': dateList[index + 1]?.type === 'active',
+          }"
+          :disabled="date.disabled && date.type !== 'normal'"
+          @click="clickDateBtn(date)"
+        >
+          {{ date.date }}
+        </button>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style lang="css" scoped>
+.inverse-leave-to,
+.reverse-enter-from {
+  transform: translateX(-100%);
+}
+.reverse-enter-to,
+.reverse-leave-from {
+  transform: translateX(0%);
+}
+.inverse-enter-from,
+.reverse-leave-to {
+  transform: translateX(100%);
+}
 .date-table__body {
   padding: 0px 12px;
 }
@@ -187,6 +216,7 @@ const disabledDate = (date: Date) => {
   justify-items: center;
   align-items: center;
   row-gap: 4px;
+  transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.5, 1);
 }
 
 .date-table__date > button {

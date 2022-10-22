@@ -49,6 +49,7 @@ table {
 .date-picker {
   color: #1b1b1b;
   box-sizing: border-box;
+  overflow: hidden;
 }
 .date-picker button {
   color: #1b1b1b;
