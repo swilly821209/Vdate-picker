@@ -18,5 +18,6 @@ module.exports = {
   rules: {
     'prettier/prettier': ['error', { singleQuote: true }],
     '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
 };
